@@ -14,20 +14,18 @@ import deep_NN as dnn
 sys.path.insert(0,"/Users/saurabhraj/Desktop/CITY AI/Programming & Maths/INM702_CW_MNIST/src/lab")
 
 
-
-#without regularization
-
 layers_list = [784, 256,64, 10]
 activation_functions = ['relu','relu','relu','softmax']
 weight_initializer = 'he'
 learning_rate = 0.1
-num_iterations = 100
 lambd = 0
 drop_rate=0
 
 sgd = False
 
-my_model = dnn.My_Neural_Network(layers_list,activation_functions, weight_initializer,learning_rate,num_iterations,lambd,drop_rate, sgd)
+my_model = My_Neural_Network(layers_list,activation_functions, 
+                             weight_initializer,learning_rate,lambd,drop_rate, 
+                             sgd)
 
 def test_suit_gradient_descent():
 
@@ -179,7 +177,84 @@ def test_linear_backward():
     assert np.round(np.sum(dA_previous),4) == np.round(np.sum(np.array([[ 0.44090989,  0.        ],[ 0.37883606,  0.],[-0.2298228,   0.        ]])),4)
     assert np.round(np.sum(dW),4) == np.round(np.sum(np.array([[ 0.44513824,  0.37371418, -0.10478989]])),4)
     assert np.round(np.sum(db),4) == np.round(np.sum(np.array([[-0.20837892]])),4)
-    print('linear_backward working CORRECTLY')
+    print('linear_backward working CORRECTLY')         
+
+
+def adam_test():
+    params = {'W1': np.array([[ 1.62434536, -0.61175641, -0.52817175],
+                    [-1.07296862,  0.86540763, -2.3015387 ]]),
+              'b1': np.array([[ 1.74481176],
+                    [-0.7612069 ]]),
+              'W2': np.array([[ 0.3190391 , -0.24937038,  1.46210794],
+                    [-2.06014071, -0.3224172 , -0.38405435],
+                    [ 1.13376944, -1.09989127, -0.17242821]]),
+              'b2': np.array([[-0.87785842],
+                    [ 0.04221375],
+                    [ 0.58281521]])}
+    grads = {'dW1': np.array([[-1.10061918,  1.14472371,  0.90159072],
+                  [ 0.50249434,  0.90085595, -0.68372786]]),
+            'db1': np.array([[-0.12289023],
+                  [-0.93576943]]),
+            'dW2': np.array([[-0.26788808,  0.53035547, -0.69166075],
+                  [-0.39675353, -0.6871727 , -0.84520564],
+                  [-0.67124613, -0.0126646 , -1.11731035]]),
+            'db2': np.array([[0.2344157 ],
+                  [1.65980218],
+                  [0.74204416]])}
+              
+    v0 = {'dW1': np.array([[0., 0., 0.],
+                [0., 0., 0.]]),
+          'dW2': np.array([[0., 0., 0.],
+                [0., 0., 0.],
+                [0., 0., 0.]]),
+          'db1': np.array([[0.],
+                [0.]]),
+          'db2': np.array([[0.],
+                [0.],
+                [0.]])}
+    s0 = {'dW1': np.array([[0., 0., 0.],
+              [0., 0., 0.]]),
+        'dW2': np.array([[0., 0., 0.],
+              [0., 0., 0.],
+              [0., 0., 0.]]),
+        'db1': np.array([[0.],
+              [0.]]),
+        'db2': np.array([[0.],
+              [0.],
+              [0.]])}
+    adam_counter, learning_rate, beta1, beta2, epsilon = (2, 0.02, 0.8, 0.888, 0.01)
+
+    updated_params, v, s, v_final, s_final = my_model.adam(params, grads, v0, s0,adam_counter, learning_rate, beta1, beta2,  epsilon)
+
+    W1 = updated_params['W1']
+    W2 = updated_params['W2']
+    b1 = updated_params['b1']
+    b2 = updated_params['b2']
+
+    W1_0 = params['W1']
+    W2_0 = params['W2']
+    b1_0 = params['b1']
+    b2_0 = params['b2']
+
+
+
+
+    assert W1.shape == W1_0.shape
+    assert b1.shape == b1_0.shape
+    assert W2.shape == W2_0.shape
+    assert b2.shape == b2_0.shape
+    
+    #print(np.sum(W1))
+    #print(np.round(np.sum(np.array([[ 1.63942428, -0.6268425,  -0.54320974],[-1.08782943,  0.85036983, -2.2865723 ]])),4))
+    assert (np.round(np.sum(W1),4) == np.round(np.sum(np.array([[ 1.63942428, -0.6268425,  -0.54320974],[-1.08782943,  0.85036983, -2.2865723 ]])),4))
+    assert (np.round(np.sum(b1),4) == np.round(np.sum(np.array([[ 1.75854357],[-0.74616067]])),4))
+    assert (np.round(np.sum(W2),4) == np.round(np.sum(np.array([[ 0.33356139, -0.26425199,  1.47707772],[-2.04538458, -0.30744933,-0.36903141],[ 1.14873036, -1.09256871, -0.15734651]])),4))
+    assert (np.round(np.sum(b2),4) == np.round(np.sum(np.array([[-0.89228024],[ 0.02707193],[ 0.56782561]])),4))
+
+    print('Adam working CORRECTLY') 
+
+
+  
 
 
 test_initialize_params()
@@ -188,3 +263,4 @@ test_suit_gradient_descent()
 test_forward_propagation()
 test_linear_backward()
 test_linear_backward()
+adam_test()
